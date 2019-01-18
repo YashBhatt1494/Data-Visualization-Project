@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<!-- saved from url=(0057)http://www.cis.umassd.edu/~dkoop/dsc530-2018sp/a3/a3.html -->
+<html lang="en" class="gr__cis_umassd_edu"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>DSC 530 Project Design</title>
+ 
+ <!-- <script src="./DSC 530 Assignment #3_files/d3.js"></script> -->
+  <style></style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.5.0/d3.js"></script>
+  <script src="https://d3js.org/d3-array.v1.min.js"></script>
+  <script src="https://d3js.org/d3-geo.v1.min.js"></script>
+  <script src="https://d3js.org/d3-geo-projection.v1.min.js"></script>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  
+  <script src="https://d3js.org/d3-interpolate.v1.min.js"></script>
+  <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+
+  <style type="text/css">
+    /* CSS Here or link to a different file */
+    #mapid { width:800px;
+	height:500px;  }
+  #BARF{
+    transform: rotate(90deg)
+  }
+
+
+  .button {
+    background-color: Maroon;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    /* https://www.w3schools.com/css/css3_buttons.asp */
+}
+
+
+#txt{
+
+
+  text-align: center;
+}
+
+#State{
+
+
+text-align: center;
+}
+  </style>
+
+
+</head>
+<body data-gr-c-s-loaded="true">
+       
+
+    <a href="index.html" class="button">index</a>
+    <a href="Page1.html" class="button">Page 1</a>
+    <a href="Page2.html" class="button">Page 2</a>
+    <a href="Page3.html" class="button">Page 3</a>
+    <a href="Page4.html" class="button">Page 4</a>
+
+        
+        <div style="height: 60px; "></div>
+
+        <div id="map"></div>
+
+        <div style="height: 30px; "> <h3 id="txt">Percentage of Population and Poverty of Different Races in each County of Selected States.</h3></div>
+        <div ><h3 id="State"></h3></div>
+
+
+        <div>
+            <div id="c1" style="float: left; width: 33.33%" ></div>
+            <div id="c2" style="float: left; width: 33.33%" ></div>
+            <div id="c3" style="float: left; width: 33.33%" ></div>
+
+        </div>
+
+        <div>
+            <div id="c4" style="float: left; width: 33.33%; " ></div>
+            <div id="c5" style="float: left; width: 33.33%; " ></div>
+            <div id="c6" style="float: left; width: 33.33%; " ></div>
+
+        </div>
+
+
+  
+
+
+
+
+        
+  
+  <script>
+  
+
+  //main function
+  function abcd(errors, mapData, abcd){
+    // console.log(mapData);
+   
+    
+    // console.log(mapData);
+	
+    var statePopulation= mapData.map(function(datum) {  //to find population state wisw
+      return {
+        State: datum.State,
+        TotalPop: mapData.filter(function(o) {
+          return o.State == datum.State;
+        }).reduce(function(sum, o) {
+          return sum + o.TotalPop;
+        }, 0)
+      };
+    })
+    //refrance: https://stackoverflow.com/questions/34010342/map-and-reduce-json-objects-with-javascript
+
+    var newArr =[] ;  ////to find population state wisw
+    for(var i in statePopulation){ 
+      newArr.push(JSON.stringify(statePopulation[i])) 
+    } 
+    var obj = {}; 
+    newArr= newArr.filter((item)=>{ return obj.hasOwnProperty(item) ? false : (obj[item] = true); }) 
+    statePopulation.length = 0 
+    for(var i in newArr){ 
+      statePopulation.push(JSON.parse(newArr[i])) 
+    } 
+    //https://stackoverflow.com/questions/23507853/remove-duplicate-objects-from-json-array
+    // console.log(statePopulation)
+
+	
+	
+	
+	
+	//State wise data 
+	
+	
+	function state_wise_Data(state){
+	
+			var statePopulation= mapData.map(function(datum) {
+			  return {
+				State: datum.State,
+				Data: mapData.filter(function(o) {
+				  return o.State == datum.State;
+				})
+			  };
+			})
+			//refrance: https://stackoverflow.com/questions/34010342/map-and-reduce-json-objects-with-javascript
+
+			var newArr =[] ;
+			for(var i in statePopulation){ 
+			  newArr.push(JSON.stringify(statePopulation[i])) 
+			} 
+			var obj = {}; 
+			newArr= newArr.filter((item)=>{ return obj.hasOwnProperty(item) ? false : (obj[item] = true); }) 
+			statePopulation.length = 0 
+			for(var i in newArr){ 
+			  statePopulation.push(JSON.parse(newArr[i])) 
+			} 
+			//https://stackoverflow.com/questions/23507853/remove-duplicate-objects-from-json-array
+
+			for(var l = 0 ; l < statePopulation.length ; l++){
+				if(statePopulation[l].State == state){
+					return statePopulation[l];
+				}
+			}
+		}
+		// console.log(state_wise_Data("Alabama"));
+		//console.log("State : ",state_race_Data("California"));
+	
+
+    
+
+function fig2(dataCounty,figid,f2){
+
+  // console.log("in fig 2 function",state);
+
+  
+  // console.log("in fig 2 function",dataCounty);
+
+
+  
+  d3.select(figid).selectAll("svg").remove();
+
+
+  var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 400 - margin.left - margin.right,
+    height = 200 - margin.top - margin.bottom;
+
+var x = d3.scaleLinear()
+    .range([0, width]);
+
+var y = d3.scaleLinear()
+    .range([height, 0]);
+
+
+
+var xAxis = d3.scaleLinear()
+.range([0, width]);
+
+var yAxis = d3.scaleLinear()
+.range([height, 0]);
+
+
+var svg = d3.select(figid).append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+  x.domain([0,100]);
+  y.domain([0,70]);
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text(f2+"%");
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Poverty%")
+
+  svg.selectAll(".dot")
+      .data(dataCounty)
+    .enter().append("circle")
+      .attr("class", "dot")
+      .attr("r", 2)
+      .attr("cx", function(d) { 
+        if (f2=="Asian")
+          return x(d.Asian);
+        else if(f2=="Black")
+          return x(d.Black);
+        else if(f2=="Hispanic")
+          return x(d.Hispanic);
+        else if(f2=="Native")
+          return x(d.Native);
+        else if(f2=="Pacific")
+          return x(d.Pacific);
+        else if(f2=="White")
+          return x(d.White);
+            
+        
+         })
+      .attr("cy", function(d) { return y(d.Poverty); })
+      .style("fill", "red");
+
+
+      svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x));
+
+        
+        svg.append("g")
+            .call(d3.axisLeft(y));
+
+  
+}
+
+
+
+    
+	
+	//End of State wise data 
+    var w = 1000;
+    var h = 300;
+
+    var projection = d3.geoAlbersUsa()
+      .fitSize([w,h], abcd)
+
+    createMap(abcd,statePopulation,"#map", projection, w, h); //function for map chart
+
+    function createMap(geojsn, statePopulation,divId, projection, w, h) {
+ 
+ //console.log(data1);
+
+//Reference: https://bl.ocks.org/mbostock/4060606
+
+
+
+ var color = d3.scaleThreshold()
+   .domain(d3.range(0,50))
+   .range(d3.schemeReds[9]);
+
+ var svg1 = d3.select(divId).append("svg")
+   .attr("width", w)
+   .attr("height", h);
+
+ var path = d3.geoPath()
+   .projection(projection);
+
+var total = 0;
+statePopulation.map(function(w){
+  total = total + w.TotalPop;
+});
+
+
+
+  svg1.append("path")
+   .datum(geojsn)
+   .attr("d", path)
+   .style("stroke", "black")
+   .style("fill", "none");
+ 
+ //console.log(data.features[1].properties.name.toLowerCase());
+ svg1.append("g")
+     .selectAll("path")
+     .data(geojsn.features)
+     .enter()
+     .append("path")
+     .attr("d", path)
+     .style("fill", function(d){
+       statePopulation.map(function(w){
+
+        if(w.State == d.properties.name){
+           d.properties.count = (w.TotalPop/total) * 100;
+         }
+       });
+       //console.log(geojsn.features);
+       return color(d.properties.count);
+     })
+	 .on('click', function(d, i){
+      	var currentState = d.properties.name;
+        // barchsrt(state_race_Data(currentState),currentState)
+       console.log(currentState);
+       document.getElementById("State").innerHTML = currentState;
+       // state_wise_Data
+       figDrow2(state_wise_Data(currentState));
+      // console.log(state_wise_Data(currentState))
+
+    
+      })
+
+    .on('mouseover', function(d, i){
+      	var currentState = d.properties.name;
+      	
+      })
+      .append("title")
+      .text(function(d) { return d.properties.name; });
+
+
+      var legends=svg1.append('g');
+                        
+                    
+                        
+                        legends.append('rect').attr('x',w-40).attr('y',30)
+                        .attr('width',20)
+                        .attr('height',15)
+                        .attr('fill',"#610411")
+                                
+                        legends.append('rect').attr('x',w-60).attr('y',30)
+                        .attr('width',20)
+                        .attr('height',15)
+                        .attr('fill',"#68010E")
+                                        
+                        legends.append('rect').attr('x',w-80).attr('y',30)
+                        .attr('width',20)
+                        .attr('height',15)
+                        .attr('fill',"#A41119")
+                                      
+                          legends.append('rect').attr('x',w-100).attr('y',30)
+                          .attr('width',20)
+                          .attr('height',15)
+                          .attr('fill',"#CB1E24")
+                          
+                          legends.append('rect').attr('x',w-120).attr('y',30)
+                          .attr('width',20)
+                          .attr('height',15)
+                          .attr('fill',"#ED3F36")
+                          legends.append('rect').attr('x',w-140).attr('y',30)
+                          .attr('width',20)
+                          .attr('height',15)
+                                .attr('fill',"#F6684A")
+                          legends.append('rect').attr('x',w-160).attr('y',30)
+                          .attr('width',20)
+                          .attr('height',15)
+                                .attr('fill',"#FE9075")
+                          legends.append('rect').attr('x',w-180).attr('y',30)
+                          .attr('width',20)
+                          .attr('height',15)
+                          .attr('fill',"#FEBDA8")
+                          
+                          legends.append('rect').attr('x',w-200).attr('y',30)
+                          .attr('width',20)
+                          .attr('height',15)
+                          .attr('fill',"#FBDED8")
+  
+  
+  
+  
+  
+  
+                          legends.append('text').attr('x',800).attr('y',15)
+                               .text("USA Population Percentage")
+                               .attr("font-family", "sans-serif")
+                               .attr("font-size", "15px")
+                               .attr("fill", "black");   
+                          legends.append('text').attr('x',800).attr('y',60)
+                               .text("0%")
+                               .attr("font-family", "sans-serif")
+                               .attr("font-size", "13px")
+                               .attr("fill", "black");   
+                          legends.append('text').attr('x',960).attr('y',60)
+                               .text("100%")
+                               .attr("font-family", "sans-serif")
+                               .attr("font-size", "13px")
+                               .attr("fill", "black");   
+  
+
+
+
+
+
+}
+
+
+
+
+
+function figDrow2(data){
+
+  var dataCounty=data.Data;
+
+  console.log(dataCounty);
+
+fig2(dataCounty,"#c1","Asian");
+fig2(dataCounty,"#c2","Black");
+fig2(dataCounty,"#c3","Hispanic");
+fig2(dataCounty,"#c4","Native");
+fig2(dataCounty,"#c5","Pacific");
+fig2(dataCounty,"#c6","White");
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//console.log(i+statePopulation);s
+
+
+  }
+  
+  d3.queue()
+          .defer(d3.json, "https://gist.githubusercontent.com/YashBhatt1494/b2a70a864ca3a9e3f578a048f81ac76f/raw/9c56b771823430338870aca92a374ec7e541325b/CensusData.json")
+          // use this version if the 100m version is too slow
+          //.defer(d3.json, "https://cdn.rawgit.com/dakoop/e3d0b2100c6b6774554dddb0947f2b67/raw/b88ded9fbc37a4e13e7f94d58a79efe2074c8c8a/ma-school-districts-500.geojson")
+          .defer(d3.json, "https://gist.githubusercontent.com/dkrathi457/f1b139170c8d0db752e41906d9cdc216/raw/3a181d755ec50a1b2ea98362a5e60fef6c94ff65/us-states.geojson")
+          .await(abcd);
+  
+  
+  //http://bl.ocks.org/weiglemc/6185069
+  
+  </script>
+
+</body>
+</html>
+  
